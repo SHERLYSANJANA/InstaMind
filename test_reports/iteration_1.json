@@ -1,0 +1,31 @@
+{
+  "summary": "First-pass smoke test of FocusRead backend + frontend. Backend endpoints healthy; all frontend flows (text, URL, controls, actions) work end-to-end. The test URL in the request (https://en.wikipedia.org/wiki/Bionic_reading) does not exist on Wikipedia (upstream 404) — not a backend bug; verified extraction with an existing URL returned 39k words correctly.",
+  "tested_scope": ["backend", "frontend", "integration"],
+  "passed": [
+    "GET /api/ -> 200, {\"message\":\"FocusRead API online\"}",
+    "POST /api/extract-url with valid URL (https://en.wikipedia.org/wiki/Reading) -> 200, title='Reading - Wikipedia', word_count=39056, source_url present, non-empty text",
+    "POST /api/extract-url with empty URL -> 400 {detail: 'URL is required'}",
+    "POST /api/extract-url with unresolvable domain -> 400 with RequestException detail",
+    "Frontend loads at / with hero, InputPanel (4 tabs), ControlPanel, BionicReader empty-state (screenshot verified)",
+    "input-text-sample-btn + input-text-apply-btn -> 74 .bionic-b spans render in reader-article; header shows '68 words · 1 min'",
+    "control-fixation-strong grows bold portions (sum 56 -> 71 across first 20 spans) — reader re-renders",
+    "control-theme-toggle toggles <html> class '' -> 'dark' (dark mode screenshot confirmed)",
+    "control-font-trigger: 'Spectral · Serif' -> 'JetBrains · Mono' after selecting Mono option",
+    "URL flow: filling input-url-field with a real Wikipedia URL + clicking input-url-fetch-btn renders 39,061 bionic bold spans in reader (integration backend->frontend works)",
+    "reader-copy-btn click succeeds and 'Text copied to clipboard' toast appears",
+    "reader-download-btn present and clickable",
+    "reader-clear-btn empties reader (returns to 'AWAITING INPUT' empty state, header shows '0 words · 1 min')"
+  ],
+  "failed": [],
+  "notes": [
+    "The requested test URL https://en.wikipedia.org/wiki/Bionic_reading returns 404 from Wikipedia itself (verified via curl -I -L). Backend correctly surfaces this as 400 with the underlying 404 message. For a positive URL test, https://en.wikipedia.org/wiki/Reading (or /wiki/Bionic_reading_(technique)) should be used instead.",
+    "PDF and Image (OCR) flows were not exercised with real files per instructions; UI tabs and dropzone controls are visually present in the InputPanel.",
+    "Empty-state hero contains ~9 demo .bionic-b spans by design — this is not stale post-clear content; reader header shows 0 words after clear."
+  ],
+  "action_items": [
+    "Optional: update the sample/documented test URL from /wiki/Bionic_reading (404 upstream) to /wiki/Bionic_reading_(technique) or another existing article, so QA scripts don't hit a false-negative."
+  ],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true
+}
