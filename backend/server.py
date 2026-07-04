@@ -1,4 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -197,3 +199,30 @@ logger = logging.getLogger(__name__)
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+
+# ---------------------------------------------------------------------------
+# Serve the built React frontend (single-container deployments — Fly.io etc.)
+# The Dockerfile copies the React `build/` directory into `backend/static/`.
+# Locally (Emergent preview) this folder does not exist, so we skip mounting.
+# ---------------------------------------------------------------------------
+STATIC_DIR = ROOT_DIR / "static"
+if STATIC_DIR.exists():
+    # Serve hashed CRA assets at /static/* (JS, CSS, media)
+    app.mount(
+        "/static",
+        StaticFiles(directory=STATIC_DIR / "static"),
+        name="static-assets",
+    )
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def spa_fallback(full_path: str):
+        # Never intercept API routes
+        if full_path.startswith("api/"):
+            raise HTTPException(status_code=404, detail="Not Found")
+        # Serve real files if they exist (favicon.svg, og-image.svg, manifest.json...)
+        candidate = STATIC_DIR / full_path
+        if full_path and candidate.is_file():
+            return FileResponse(candidate)
+        # Otherwise fall back to React's index.html so client-side routing works
+        return FileResponse(STATIC_DIR / "index.html")
