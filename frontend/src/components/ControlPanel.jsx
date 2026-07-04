@@ -1,7 +1,16 @@
 import { useReader } from "@/context/ReaderContext";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sun, Moon, Newspaper, RotateCcw } from "lucide-react";
+import { Sun, Moon, Newspaper, RotateCcw, Sparkles } from "lucide-react";
+
+const PRESETS = {
+  default:    { label: "Default",              fontFamily: "serif",       fixation: "normal", fontSize: 20, lineHeight: 1.75, readingWidth: 68 },
+  dyslexia:   { label: "Dyslexia-friendly",    fontFamily: "opendyslexic",fixation: "strong", fontSize: 22, lineHeight: 2.00, readingWidth: 55 },
+  lowvision:  { label: "Low-vision",           fontFamily: "atkinson",    fixation: "strong", fontSize: 26, lineHeight: 1.90, readingWidth: 60 },
+  adhd:       { label: "ADHD focus",           fontFamily: "lexend",      fixation: "strong", fontSize: 20, lineHeight: 1.85, readingWidth: 60 },
+  speedread:  { label: "Speed read",           fontFamily: "lexend",      fixation: "strong", fontSize: 22, lineHeight: 1.60, readingWidth: 82 },
+  editorial:  { label: "Editorial",            fontFamily: "georgia",     fixation: "normal", fontSize: 19, lineHeight: 1.80, readingWidth: 68 },
+};
 
 const FIXATION_OPTIONS = [
   { v: "light", l: "Light" },
@@ -53,6 +62,36 @@ export default function ControlPanel() {
           <div className="text-xs text-muted-foreground font-mono mt-1">reader settings</div>
         </div>
       </div>
+
+      {/* Preset */}
+      <Row label="Reading preset" testId="control-preset">
+        <Select
+          onValueChange={(k) => {
+            const p = PRESETS[k];
+            if (p) set({
+              fontFamily: p.fontFamily,
+              fixation: p.fixation,
+              fontSize: p.fontSize,
+              lineHeight: p.lineHeight,
+              readingWidth: p.readingWidth,
+            });
+          }}
+        >
+          <SelectTrigger data-testid="control-preset-trigger" className="rounded-none border-border h-10 font-mono text-xs">
+            <span className="flex items-center gap-2">
+              <Sparkles className="h-3.5 w-3.5" />
+              <SelectValue placeholder="Apply a preset…" />
+            </span>
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            {Object.entries(PRESETS).map(([k, p]) => (
+              <SelectItem key={k} value={k} className="rounded-none font-mono text-xs" data-testid={`control-preset-${k}`}>
+                {p.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Row>
 
       {/* Theme */}
       <Row label="Theme" testId="control-theme">

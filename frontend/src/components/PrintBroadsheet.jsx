@@ -3,13 +3,25 @@ import { BionicText } from "@/components/BionicText";
 import { countWords, readingTimeMinutes } from "@/lib/bionic";
 
 export default function PrintBroadsheet() {
-  const { text, sourceLabel, fixation } = useReader();
+  const { text, sourceLabel, fixation, fontFamily } = useReader();
   if (!text) return null;
   const wc = countWords(text);
   const rt = readingTimeMinutes(text);
   const date = new Date().toLocaleDateString(undefined, {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
+
+  const bodyFont =
+    fontFamily === "lexend" ? '"Lexend", sans-serif'
+    : fontFamily === "atkinson" ? '"Atkinson Hyperlegible", sans-serif'
+    : fontFamily === "opendyslexic" ? '"OpenDyslexic", "Comic Sans MS", cursive'
+    : fontFamily === "comic" ? '"Comic Sans MS", cursive'
+    : fontFamily === "verdana" ? "Verdana, sans-serif"
+    : fontFamily === "arial" ? "Arial, sans-serif"
+    : fontFamily === "georgia" ? 'Georgia, "Times New Roman", serif'
+    : fontFamily === "sans" ? '"IBM Plex Sans", sans-serif'
+    : fontFamily === "mono" ? '"JetBrains Mono", monospace'
+    : '"Old Standard TT", "Spectral", Georgia, serif'; // default / serif
 
   return (
     <div id="print-broadsheet" className="print-only" aria-hidden data-testid="print-broadsheet">
@@ -35,7 +47,7 @@ export default function PrintBroadsheet() {
         </>
       )}
 
-      <article className="pb-article">
+      <article className="pb-article" style={{ fontFamily: bodyFont }}>
         <BionicText text={text} fixation={fixation} />
       </article>
 
