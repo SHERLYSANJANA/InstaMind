@@ -1,52 +1,75 @@
-# FocusRead — Bionic Reader (PRD)
+# InstaRead — Product Requirements Document
 
-## Original problem statement
-> "https://focusread-alpha.vercel.app/ this is my basic idea, to create a bionic reader app. but now i want it to be more high tech with a minimalistic design and multiple inputs... Any form of picture or the pdf can also be uploaded and it should entirely be converted into a bionic text"
+## Original Problem Statement
+Build a high-tech, minimalistic **bionic reader web app** with support for multiple input types (paste text, PDF upload, image OCR, URL/webpage extraction). Every input must be converted entirely to bionic text. Aesthetic: ultra-minimal monochrome / editorial reading-paper vibe. Provide customization for fixation strength, fonts, reading width, and dark/light toggle. **No user authentication** required.
 
-## Architecture
-- **Frontend:** React 19 + Tailwind + shadcn/ui. Client-side PDF extraction (`pdfjs-dist`), client-side OCR (`tesseract.js`), custom bionic engine (`/src/lib/bionic.js`).
-- **Backend:** FastAPI at `/api`. Endpoint `POST /api/extract-url` uses `requests` + `readability-lxml` + `BeautifulSoup` to pull readable article text from any URL.
-- **State:** React Context (`ReaderContext`) with localStorage-persisted reader preferences.
-- **Design:** Editorial reading-paper light + monochrome dark, sharp 1px borders, no shadows, single restrained accent (#F95738). Typography: Outfit (UI), Spectral (serif), IBM Plex Sans, JetBrains Mono.
+## User Personas
+- **Focused reader** — wants faster reading via bionic fixation
+- **Accessibility-first reader** — dyslexia, low-vision, ADHD presets
+- **Researcher/student** — pastes long-form web articles, exports to broadsheet PDF
+- **Sharer** — creates read-only permalinks to share bionic conversions
 
-## User personas
-- Anyone who wants faster/focused reading of long-form text (students, researchers, ADHD readers, casual readers).
-- No authentication — purely a tool.
+## Core Requirements (all DONE ✅)
+1. Bionic text converter with adjustable fixation strength
+2. Multi-input handling: paste, PDF upload, image OCR (Tesseract), URL extraction
+3. Ultra-minimal Paper / Ink / Newspaper themes
+4. 10 typefaces including Lexend, OpenDyslexic
+5. Accessibility presets (Dyslexia, Low-vision, ADHD)
+6. Multi-column reading layout + focus-line ruler
+7. Web Speech API TTS with karaoke-style word highlighting
+8. Shareable read-only permalinks `/r/{id}` with QR codes
+9. Print-to-PDF broadsheet newspaper export
+10. Keyboard shortcuts (`t`, `[`, `]`)
+11. LocalStorage persistence across reloads
+12. No login / no accounts (privacy-first)
 
-## Core requirements (static)
-1. Four input modes: Text paste, PDF upload, Image upload (OCR), URL fetch.
-2. Bionic text conversion with fixation strength control (light / normal / strong).
-3. Reader controls: typeface (serif/sans/mono), size, line-height, reading width.
-4. Light/Dark theme toggle.
-5. Copy / Export TXT / Clear controls.
-6. Word count + estimated reading time.
+## Tech Stack
+- **Frontend**: React 19, Tailwind CSS, shadcn/ui, framer-motion, qrcode.react, tesseract.js, pdfjs-dist
+- **Backend**: FastAPI, Motor (async MongoDB), readability-lxml, BeautifulSoup4
+- **Storage**: MongoDB (shared reads only — text stays client-side by default)
 
-## What's implemented (2026-02)
-- [x] All 4 input pipelines wired end-to-end (verified by testing agent).
-- [x] Bionic engine with 3 fixation levels — structured tokens, safe React rendering (no dangerouslySetInnerHTML).
-- [x] Full control panel (fixation, font, size, line-height, width, theme, reset).
-- [x] Reader canvas with paragraph preservation, copy/export/clear, live word/time stats.
-- [x] Empty state, dot loaders for async processing, sonner toasts for feedback.
-- [x] `POST /api/extract-url` with readability parsing, 400/422 error handling.
-- [x] Fonts loaded (Outfit, Spectral, IBM Plex Sans, JetBrains Mono).
-- [x] Editorial monochrome theme (light + dark) with paper-grain overlay.
-- [x] LocalStorage persists user reader preferences.
+## Key API Endpoints
+- `GET /api/` — health check
+- `POST /api/extract-url` — clean article extraction from a URL
+- `POST /api/share` — create shareable permalink
+- `GET /api/share/{id}` — retrieve shared read
 
-## Prioritized backlog
-### P0 (nice next iteration)
-- Save/restore last document in localStorage (currently only preferences persist).
-- Better multi-page PDF handling UX (page-range picker for very long PDFs).
+## Data Model
+```
+shared_reads: {
+  id: str (10-char hex),
+  text: str,
+  title: str | null,
+  source: str | null,
+  created_at: ISO string,
+  word_count: int
+}
+```
 
-### P1
-- Reading progress bar / scroll indicator over the reader canvas.
-- Keyboard shortcuts (space to scroll, `t` to toggle theme, `[`/`]` for fixation).
-- Multi-language OCR (Tesseract supports many languages — expose a dropdown).
-- Import from Kindle-style .epub.
+## Deployment History
+- **Feb 2026**: Emergent deployment health check PASSED — deployed to `*.emergent.host`
+- Attempted external hosting on Railway (blocked by ran-out-of-credits), Fly.io (Rupay not accepted); user chose Emergent Deployment as final production host
+- Removed unused private packages (`emergentintegrations`, `litellm`) from `backend/requirements.txt` to unblock external hosts (still deployable there via the Dockerfile at repo root)
+- Added multi-stage `Dockerfile` + `.dockerignore` for optional external Docker-based hosting (Render, Fly, Railway) — dormant on Emergent
+- `server.py` conditionally serves React `static/` build if the folder exists (activated only in Docker container builds)
 
-### P2
-- Focus-line ruler that follows the cursor.
-- TTS playback of loaded text.
-- Shareable read-only permalinks (would require backend storage).
+## What's Implemented (as of Feb 2026)
+- Full MVP feature set (all 12 core requirements above)
+- Rebranding: FocusRead → InstaRead (globally applied)
+- Favicon + OG image (`favicon.svg`, `og-image.svg`)
+- README with full feature list
+- Design guidelines saved to `/app/design_guidelines.json`
 
-## Next tasks
-- Await user feedback on the current build before deepening any feature.
+## Backlog / Future Enhancements
+- **P1**: Reading streak widget (localStorage-tracked daily sessions)
+- **P1**: WPM tracker + reading session history
+- **P2**: TTS voice speed/pitch presets
+- **P2**: Highlight/annotation export to Markdown
+- **P2**: `/api/health` endpoint with MongoDB ping (for auto-restart on external hosts)
+- **P3**: Multi-language OCR expansion
+- **P3**: Import from Pocket / Instapaper
+
+## Non-Goals
+- User accounts / authentication (privacy-first design)
+- Server-side text storage (unless user explicitly shares)
+- Native mobile apps (responsive web is sufficient)
