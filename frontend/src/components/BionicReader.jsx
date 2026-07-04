@@ -20,6 +20,13 @@ const FONT_STACK = {
   serif: "var(--font-serif)",
   sans: "var(--font-sans)",
   mono: "var(--font-mono)",
+  lexend: '"Lexend", ui-sans-serif, system-ui, sans-serif',
+  atkinson: '"Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif',
+  opendyslexic: '"OpenDyslexic", "Comic Sans MS", cursive, sans-serif',
+  comic: '"Comic Sans MS", "Comic Sans", cursive, sans-serif',
+  verdana: 'Verdana, Geneva, Tahoma, sans-serif',
+  arial: 'Arial, Helvetica, sans-serif',
+  georgia: 'Georgia, "Times New Roman", serif',
 };
 
 function useVoices() {

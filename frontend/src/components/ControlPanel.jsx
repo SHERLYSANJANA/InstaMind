@@ -10,9 +10,16 @@ const FIXATION_OPTIONS = [
 ];
 
 const FONT_OPTIONS = [
-  { v: "serif", l: "Spectral · Serif" },
+  { v: "serif", l: "Default · Spectral" },
   { v: "sans", l: "IBM Plex · Sans" },
   { v: "mono", l: "JetBrains · Mono" },
+  { v: "lexend", l: "Lexend" },
+  { v: "atkinson", l: "Atkinson Hyperlegible" },
+  { v: "opendyslexic", l: "OpenDyslexic" },
+  { v: "comic", l: "Comic Sans" },
+  { v: "verdana", l: "Verdana" },
+  { v: "arial", l: "Arial" },
+  { v: "georgia", l: "Georgia" },
 ];
 
 const THEME_OPTIONS = [
@@ -98,8 +105,30 @@ export default function ControlPanel() {
           </SelectTrigger>
           <SelectContent className="rounded-none">
             {FONT_OPTIONS.map((o) => (
-              <SelectItem key={o.v} value={o.v} className="rounded-none font-mono text-xs" data-testid={`control-font-${o.v}`}>
-                {o.l}
+              <SelectItem
+                key={o.v}
+                value={o.v}
+                className="rounded-none font-mono text-xs"
+                data-testid={`control-font-${o.v}`}
+              >
+                <span
+                  style={{
+                    fontFamily:
+                      o.v === "serif" ? "var(--font-serif)"
+                      : o.v === "sans" ? "var(--font-sans)"
+                      : o.v === "mono" ? "var(--font-mono)"
+                      : o.v === "lexend" ? '"Lexend", sans-serif'
+                      : o.v === "atkinson" ? '"Atkinson Hyperlegible", sans-serif'
+                      : o.v === "opendyslexic" ? '"OpenDyslexic", "Comic Sans MS", cursive'
+                      : o.v === "comic" ? '"Comic Sans MS", cursive'
+                      : o.v === "verdana" ? "Verdana, sans-serif"
+                      : o.v === "arial" ? "Arial, sans-serif"
+                      : o.v === "georgia" ? "Georgia, serif"
+                      : undefined,
+                  }}
+                >
+                  {o.l}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>

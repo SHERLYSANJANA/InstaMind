@@ -88,7 +88,13 @@ A sticky sidebar (`Controls`) exposes:
 
 - **Theme** — Paper / Ink / Newspaper (segmented)
 - **Fixation strength** — Light / Normal / Strong (segmented)
-- **Typeface** — Spectral (serif) / IBM Plex Sans / JetBrains Mono
+- **Typeface** — 10 options, each previewed in its own face in the dropdown:
+  - **Default · Spectral** (editorial serif)
+  - **IBM Plex Sans**, **JetBrains Mono**
+  - **Lexend** — designed to reduce visual stress and improve reading proficiency
+  - **Atkinson Hyperlegible** — Braille Institute's high-legibility face
+  - **OpenDyslexic** — weighted-bottom letterforms designed for readers with dyslexia
+  - **Comic Sans**, **Verdana**, **Arial**, **Georgia** — familiar system faces
 - **Font size** — 14 → 32 px
 - **Line height** — 1.30 → 2.20
 - **Reading width** — 40 → 95 characters per line
