@@ -2,6 +2,7 @@ import AppHeader from "@/components/AppHeader";
 import InputPanel from "@/components/InputPanel";
 import ControlPanel from "@/components/ControlPanel";
 import BionicReader from "@/components/BionicReader";
+import PrintBroadsheet from "@/components/PrintBroadsheet";
 import { Toaster } from "@/components/ui/sonner";
 import { useReader } from "@/context/ReaderContext";
 
@@ -62,6 +63,7 @@ export default function ReaderPage() {
       </main>
 
       <Toaster theme="system" position="bottom-right" toastOptions={{ className: "rounded-none border border-border font-mono text-xs" }} />
+      <PrintBroadsheet />
     </div>
   );
 }

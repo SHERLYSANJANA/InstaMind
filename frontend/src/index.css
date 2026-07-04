@@ -186,3 +186,72 @@ body {
 @layer base {
   [data-debug-wrapper="true"] { display: contents !important; }
 }
+
+/* -------------------- PRINT BROADSHEET -------------------- */
+.print-only { display: none; }
+
+@media print {
+  body * { visibility: hidden; }
+  #print-broadsheet, #print-broadsheet * { visibility: visible; }
+  #print-broadsheet {
+    display: block !important;
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    background: #f2ede4;
+    color: #000;
+    padding: 18mm 16mm;
+    font-family: "Old Standard TT", "Spectral", Georgia, serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+  }
+  .pb-header {
+    border-bottom: 3px double #000;
+    padding-bottom: 6px;
+    margin-bottom: 14px;
+  }
+  .pb-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    text-transform: uppercase;
+    font-family: "Outfit", sans-serif;
+    font-size: 8pt; letter-spacing: 0.22em; font-weight: 700;
+    border-bottom: 1px solid #000; padding-bottom: 4px;
+  }
+  .pb-row-bottom { border-bottom: none; border-top: 1px solid #000; padding-top: 4px; padding-bottom: 0; }
+  .pb-masthead {
+    font-family: "UnifrakturCook", "UnifrakturMaguntia", serif;
+    font-size: 60pt; text-align: center;
+    margin: 6px 0 6px; letter-spacing: -0.01em;
+    line-height: 1;
+  }
+  .pb-kicker {
+    text-align: center;
+    font-family: "Outfit", sans-serif;
+    font-size: 8pt; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600;
+    margin-top: 14px;
+  }
+  .pb-title {
+    font-family: "Old Standard TT", serif;
+    font-size: 22pt; font-weight: 700;
+    text-align: center; margin: 6px 0 4px;
+  }
+  .pb-halftone {
+    height: 6px; width: 60px; margin: 6px auto 14px;
+    background-image: radial-gradient(#000 1px, transparent 1.4px);
+    background-size: 5px 5px;
+  }
+  .pb-article {
+    column-count: 2; column-gap: 18px; column-rule: 1px solid #333;
+    text-align: justify; hyphens: auto;
+  }
+  .pb-article p { margin: 0 0 6pt 0; break-inside: avoid-column; }
+  .pb-article b { color: #000; font-weight: 700; }
+  .pb-article .bionic-r { color: #333; font-weight: 300; }
+  .pb-footer {
+    margin-top: 14px; padding-top: 6px;
+    border-top: 3px double #000;
+    text-align: center;
+    font-family: "Outfit", sans-serif;
+    font-size: 8pt; letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  @page { size: A4; margin: 0; }
+}

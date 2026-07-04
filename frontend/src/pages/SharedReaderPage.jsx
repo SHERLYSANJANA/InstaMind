@@ -4,6 +4,7 @@ import axios from "axios";
 import AppHeader from "@/components/AppHeader";
 import ControlPanel from "@/components/ControlPanel";
 import BionicReader from "@/components/BionicReader";
+import PrintBroadsheet from "@/components/PrintBroadsheet";
 import { useReader } from "@/context/ReaderContext";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -74,6 +75,7 @@ export default function SharedReaderPage() {
         </div>
       </main>
       <Toaster theme="system" position="bottom-right" toastOptions={{ className: "rounded-none border border-border font-mono text-xs" }} />
+      <PrintBroadsheet />
     </div>
   );
 }

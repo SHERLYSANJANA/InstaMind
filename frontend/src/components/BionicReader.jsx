@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
-import { Copy, Download, Trash2, Keyboard, Play, Pause, Square, Ruler, Share2, Volume2 } from "lucide-react";
+import { Copy, Download, Trash2, Keyboard, Play, Pause, Square, Ruler, Share2, Volume2, Printer } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import { QRCodeSVG } from "qrcode.react";
@@ -238,6 +238,9 @@ export default function BionicReader({ hideShare = false }) {
           </Button>
           <Button variant="ghost" size="sm" onClick={handleDownload} disabled={!text} data-testid="reader-download-btn" className="rounded-none h-8">
             <Download className="h-3.5 w-3.5 mr-1.5" /> Export
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => window.print()} disabled={!text} data-testid="reader-print-btn" className="rounded-none h-8">
+            <Printer className="h-3.5 w-3.5 mr-1.5" /> Print
           </Button>
           {!hideShare && (
             <Button variant="ghost" size="sm" onClick={clearText} disabled={!text} data-testid="reader-clear-btn" className="rounded-none h-8">
