@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <pattern id="dots" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="0.9" fill="#0a0a0a" opacity="0.12"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#f2ede4"/>
+  <rect width="1200" height="630" fill="url(#dots)"/>
+
+  <!-- Nameplate top -->
+  <g font-family="Outfit, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="4" fill="#0a0a0a">
+    <text x="80" y="90">VOL. I · NO. 1</text>
+    <text x="600" y="90" text-anchor="middle">BIONIC READING EDITION</text>
+    <text x="1120" y="90" text-anchor="end">LATE EDITION</text>
+  </g>
+  <line x1="80" y1="110" x2="1120" y2="110" stroke="#0a0a0a" stroke-width="2"/>
+
+  <!-- Masthead -->
+  <text x="600" y="280" text-anchor="middle"
+        font-family="'UnifrakturCook','UnifrakturMaguntia',serif"
+        font-size="180" font-weight="700" fill="#0a0a0a" letter-spacing="-2">InstaRead</text>
+
+  <!-- Double rule -->
+  <line x1="80" y1="330" x2="1120" y2="330" stroke="#0a0a0a" stroke-width="1"/>
+  <line x1="80" y1="338" x2="1120" y2="338" stroke="#0a0a0a" stroke-width="3"/>
+
+  <!-- Kicker -->
+  <text x="600" y="400" text-anchor="middle"
+        font-family="Outfit, Arial, sans-serif" font-size="20" font-weight="600"
+        letter-spacing="6" fill="#0a0a0a">A BIONIC READING ENGINE</text>
+
+  <!-- Big serif tagline -->
+  <g font-family="'Old Standard TT','Georgia',serif" fill="#0a0a0a">
+    <text x="600" y="470" text-anchor="middle" font-size="52" font-weight="700">
+      <tspan font-weight="700">Rea</tspan><tspan opacity="0.5" font-weight="300">d</tspan>
+      <tspan font-weight="700"> ins</tspan><tspan opacity="0.5" font-weight="300">tantly.</tspan>
+      <tspan font-weight="700"> Foc</tspan><tspan opacity="0.5" font-weight="300">us</tspan>
+      <tspan font-weight="700"> dee</tspan><tspan opacity="0.5" font-weight="300">ply.</tspan>
+    </text>
+  </g>
+
+  <!-- Halftone stripe -->
+  <g transform="translate(560,510)">
+    <rect x="0" y="0" width="80" height="6" fill="url(#dots)"/>
+  </g>
+
+  <!-- Footer -->
+  <line x1="80" y1="565" x2="1120" y2="565" stroke="#0a0a0a" stroke-width="3"/>
+  <line x1="80" y1="573" x2="1120" y2="573" stroke="#0a0a0a" stroke-width="1"/>
+  <text x="600" y="605" text-anchor="middle"
+        font-family="Outfit, Arial, sans-serif" font-size="16" font-weight="600"
+        letter-spacing="5" fill="#0a0a0a">TEXT · PDF · IMAGE · URL — TYPESET FOR YOUR EYES</text>
+</svg>
