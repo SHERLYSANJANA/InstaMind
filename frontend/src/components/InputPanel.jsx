@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useReader } from "@/context/ReaderContext";
+import { useReader, OCR_LANGUAGES } from "@/context/ReaderContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FileText, Image as ImageIcon, Link2, Type, Upload, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FileText, Image as ImageIcon, Link2, Type, Upload, X, Languages } from "lucide-react";
 import { toast } from "sonner";
 import {
   extractTextFromImage,
@@ -27,7 +28,7 @@ function DotLoader({ label }) {
 }
 
 export default function InputPanel() {
-  const { set, text: currentText } = useReader();
+  const { set, text: currentText, ocrLang } = useReader();
   const [tab, setTab] = useState("text");
   const [pasted, setPasted] = useState("");
   const [url, setUrl] = useState("");
@@ -36,7 +37,7 @@ export default function InputPanel() {
 
   // Previews per input kind
   const [imagePreview, setImagePreview] = useState(null); // { name, size, url }
-  const [pdfPreview, setPdfPreview] = useState(null);      // { name, size, pages, thumbnail }
+  const [pdfPreview, setPdfPreview] = useState(null);      // { name, size, pages, thumbnails: [] }
   const [urlPreview, setUrlPreview] = useState(null);      // { title, source_url, snippet, word_count }
 
   const pdfInputRef = useRef(null);
@@ -64,11 +65,14 @@ export default function InputPanel() {
     if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
       toast.error("Please upload a valid PDF file"); return;
     }
-    setPdfPreview({ name: file.name, size: file.size, pages: null, thumbnail: null });
-    setProcessing("Rendering preview");
+    setPdfPreview({ name: file.name, size: file.size, pages: null, thumbnails: [] });
+    setProcessing("Rendering pages");
+    setProgress(null);
     try {
-      const { thumbnail, pages, _pdfDoc } = await renderPDFPreview(file);
-      setPdfPreview({ name: file.name, size: file.size, pages, thumbnail });
+      const { thumbnails, pages, _pdfDoc } = await renderPDFPreview(file, (p) =>
+        setProgress(`${p.done}/${p.total}`)
+      );
+      setPdfPreview({ name: file.name, size: file.size, pages, thumbnails });
       setProcessing("Extracting PDF");
       setProgress(null);
       const t = await extractTextFromPDF(_pdfDoc, (p) => setProgress(`page ${p.page}/${p.total}`));
@@ -90,7 +94,11 @@ export default function InputPanel() {
     setProcessing("Running OCR");
     setProgress(null);
     try {
-      const t = await extractTextFromImage(file, (p) => setProgress(`${Math.round(p.progress * 100)}%`));
+      const t = await extractTextFromImage(
+        file,
+        (p) => setProgress(`${Math.round((p.progress || 0) * 100)}%`),
+        ocrLang || "eng"
+      );
       applyText(t, `Image · ${file.name}`);
     } catch (e) {
       console.error(e);
@@ -231,6 +239,31 @@ export default function InputPanel() {
 
         {/* IMAGE */}
         <TabsContent value="image" className="p-5 m-0">
+          <div className="flex items-center justify-between mb-3 gap-3">
+            <label className="label-caps flex items-center gap-1.5">
+              <Languages className="h-3 w-3" /> OCR language
+            </label>
+            <Select value={ocrLang} onValueChange={(v) => set({ ocrLang: v })}>
+              <SelectTrigger
+                data-testid="input-image-lang-trigger"
+                className="rounded-none border-border h-8 w-[220px] font-mono text-xs"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="rounded-none max-h-64">
+                {OCR_LANGUAGES.map((o) => (
+                  <SelectItem
+                    key={o.code}
+                    value={o.code}
+                    data-testid={`input-image-lang-${o.code}`}
+                    className="rounded-none font-mono text-xs"
+                  >
+                    {o.label} · <span className="opacity-60">{o.code}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           {imagePreview ? (
             <ImagePreviewCard
               preview={imagePreview}
@@ -383,32 +416,51 @@ function ImagePreviewCard({ preview, onClear, onReplace, processing, progress })
 }
 
 function PDFPreviewCard({ preview, onClear, onReplace, processing, progress }) {
+  const thumbs = preview.thumbnails || [];
   return (
     <PreviewShell testId="pdf-preview" onClear={onClear} onReplace={onReplace} processing={processing} progress={progress}>
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="border border-border bg-[hsl(var(--surface-secondary))] w-full md:w-56 h-56 md:h-64 flex items-center justify-center overflow-hidden">
-          {preview.thumbnail ? (
-            <img
-              src={preview.thumbnail}
-              alt="PDF first page"
-              data-testid="pdf-preview-thumb"
-              className="max-w-full max-h-full object-contain shadow-none"
-            />
-          ) : (
-            <FileText className="h-10 w-10 opacity-40" />
-          )}
-        </div>
-        <div className="flex-1 flex flex-col justify-between">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
           <div>
             <div className="text-sm font-medium break-all" data-testid="pdf-preview-name">{preview.name}</div>
             <div className="text-xs text-muted-foreground font-mono mt-1">
               {humanBytes(preview.size)}{preview.pages ? ` · ${preview.pages} page${preview.pages > 1 ? "s" : ""}` : ""}
+              {thumbs.length && preview.pages && thumbs.length < preview.pages ? ` · previewing ${thumbs.length}` : ""}
             </div>
           </div>
-          <div className="label-caps mt-4">
+          <div className="label-caps">
             {processing ? processing : "Extraction complete — text loaded below"}
           </div>
         </div>
+
+        {thumbs.length > 0 ? (
+          <div
+            data-testid="pdf-preview-carousel"
+            className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory"
+            style={{ scrollbarWidth: "thin" }}
+          >
+            {thumbs.map((src, i) => (
+              <figure
+                key={i}
+                data-testid={`pdf-preview-thumb-${i + 1}`}
+                className="snap-start shrink-0 border border-border bg-[hsl(var(--surface-secondary))] w-[150px] h-[200px] flex items-center justify-center overflow-hidden relative"
+              >
+                <img
+                  src={src}
+                  alt={`PDF page ${i + 1}`}
+                  className="max-w-full max-h-full object-contain"
+                />
+                <figcaption className="absolute bottom-0 left-0 right-0 text-[10px] font-mono text-center bg-foreground text-background py-0.5 uppercase tracking-widest">
+                  p. {i + 1}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        ) : (
+          <div className="border border-border bg-[hsl(var(--surface-secondary))] h-40 flex items-center justify-center">
+            <FileText className="h-10 w-10 opacity-40" />
+          </div>
+        )}
       </div>
     </PreviewShell>
   );

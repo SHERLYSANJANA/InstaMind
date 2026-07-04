@@ -1,8 +1,11 @@
-// Client-side input processors: PDF text extraction, image OCR, URL fetch.
+// Client-side input processors: PDF text extraction (+ multi-page thumbnails),
+// image OCR (multi-language), URL fetch.
 import axios from "axios";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+const MAX_THUMB_PAGES = 20; // safety cap for the carousel
 
 /* ----------------------------- PDF ----------------------------- */
 let _pdfjs = null;
@@ -14,22 +17,29 @@ async function getPdfjs() {
   return pdfjs;
 }
 
-/** Render page 1 of a PDF into a small dataURL preview and return page count too. */
-export async function renderPDFPreview(file) {
-  const pdfjs = await getPdfjs();
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
-  const page = await pdf.getPage(1);
-  const viewport = page.getViewport({ scale: 0.55 });
+async function renderPage(pdf, pageNumber, scale = 0.45) {
+  const page = await pdf.getPage(pageNumber);
+  const viewport = page.getViewport({ scale });
   const canvas = document.createElement("canvas");
   canvas.width = viewport.width;
   canvas.height = viewport.height;
   await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
-  return {
-    thumbnail: canvas.toDataURL("image/png"),
-    pages: pdf.numPages,
-    _pdfDoc: pdf, // reuse for full extraction to avoid re-parsing
-  };
+  return canvas.toDataURL("image/png");
+}
+
+/** Return page count + array of thumbnail dataURLs (up to MAX_THUMB_PAGES). */
+export async function renderPDFPreview(file, onProgress) {
+  const pdfjs = await getPdfjs();
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+  const total = pdf.numPages;
+  const cap = Math.min(total, MAX_THUMB_PAGES);
+  const thumbnails = [];
+  for (let i = 1; i <= cap; i++) {
+    thumbnails.push(await renderPage(pdf, i, 0.45));
+    if (onProgress) onProgress({ done: i, total: cap });
+  }
+  return { thumbnails, pages: total, _pdfDoc: pdf };
 }
 
 export async function extractTextFromPDF(fileOrDoc, onProgress) {
@@ -75,12 +85,14 @@ async function getTesseract() {
   return mod;
 }
 
-export async function extractTextFromImage(file, onProgress) {
+export async function extractTextFromImage(file, onProgress, langCode = "eng") {
   const { createWorker } = await getTesseract();
-  const worker = await createWorker("eng", 1, {
+  const worker = await createWorker(langCode, 1, {
     logger: (m) => {
       if (onProgress && m.status === "recognizing text") {
         onProgress({ progress: m.progress });
+      } else if (onProgress && m.status && m.status.includes("loading")) {
+        onProgress({ progress: 0, status: m.status });
       }
     },
   });

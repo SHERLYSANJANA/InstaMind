@@ -1,10 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useReader } from "@/context/ReaderContext";
 import { BionicText } from "@/components/BionicText";
 import { countWords, readingTimeMinutes } from "@/lib/bionic";
 import { Button } from "@/components/ui/button";
-import { Copy, Download, Trash2 } from "lucide-react";
+import { Copy, Download, Trash2, Keyboard } from "lucide-react";
 import { toast } from "sonner";
+import ReadingProgress from "@/components/ReadingProgress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const FONT_STACK = {
   serif: "var(--font-serif)",
@@ -15,6 +17,7 @@ const FONT_STACK = {
 export default function BionicReader() {
   const { text, sourceLabel, fixation, fontFamily, fontSize, lineHeight, readingWidth, theme, clearText } = useReader();
   const isNews = theme === "newspaper";
+  const articleRef = useRef(null);
 
   const stats = useMemo(
     () => ({ words: countWords(text), minutes: readingTimeMinutes(text) }),
@@ -47,6 +50,7 @@ export default function BionicReader() {
       data-testid="bionic-reader"
       className={`relative flex-1 min-h-[70vh] border border-border ${isNews ? "newsprint-tex" : "bg-[hsl(var(--surface))]"}`}
     >
+      {text && <ReadingProgress targetRef={articleRef} />}
       <header className={`flex items-center justify-between border-b border-border px-6 py-3 ${isNews ? "rule-thick" : ""}`}>
         <div className="flex items-center gap-4">
           <span className="label-caps">{isNews ? "The Feature" : "Reader"}</span>
@@ -63,6 +67,26 @@ export default function BionicReader() {
             <span data-testid="reader-minutes">{stats.minutes} min</span>
           </div>
           <div className="flex items-center gap-1">
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    data-testid="reader-shortcuts-btn"
+                    aria-label="Keyboard shortcuts"
+                    className="h-8 w-8 border border-border flex items-center justify-center hover:bg-[hsl(var(--surface-secondary))] transition-colors"
+                  >
+                    <Keyboard className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="rounded-none border-border font-mono text-[11px] leading-relaxed">
+                  <div className="uppercase tracking-widest label-caps mb-1">Shortcuts</div>
+                  <div><b>T</b> — cycle theme</div>
+                  <div><b>[</b> / <b>]</b> — fixation strength</div>
+                  <div><b>Space</b> — scroll page</div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <Button variant="ghost" size="sm" onClick={handleCopy} disabled={!text} data-testid="reader-copy-btn" className="rounded-none h-8">
               <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy
             </Button>
@@ -89,6 +113,7 @@ export default function BionicReader() {
               </div>
             )}
             <article
+              ref={articleRef}
               data-testid="reader-article"
               style={{ fontFamily: effectiveFontStack, fontSize: `${fontSize}px`, lineHeight }}
               className={`text-foreground ${isNews ? "text-justify" : ""}`}
