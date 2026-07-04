@@ -1,0 +1,141 @@
+{
+  "theme": {
+    "archetype": "Swiss & High-Contrast (4) + Organic & Earthy (1) - Editorial High-Tech",
+    "primary_mode": "toggle",
+    "vibe": "Ultra-minimal monochrome with an editorial reading-paper feel, fused with high-tech precision. No gradients. No soft shadows. Hard 1px borders, generous whitespace, stark contrast."
+  },
+  "colors": {
+    "light": {
+      "background": "#F7F5F0",
+      "surface": "#FFFFFF",
+      "surface_secondary": "#EAE7DE",
+      "border": "#E5E1D8",
+      "text_primary": "#1A1A1A",
+      "text_secondary": "#666666",
+      "accent": "#F95738",
+      "accent_foreground": "#FFFFFF",
+      "bionic_bold": "#000000",
+      "bionic_dim": "#555555"
+    },
+    "dark": {
+      "background": "#0A0A0A",
+      "surface": "#121212",
+      "surface_secondary": "#1A1A1A",
+      "border": "#2A2A2A",
+      "text_primary": "#EAE7DE",
+      "text_secondary": "#A0A0A0",
+      "accent": "#F95738",
+      "accent_foreground": "#FFFFFF",
+      "bionic_bold": "#FFFFFF",
+      "bionic_dim": "#A0A0A0"
+    }
+  },
+  "typography": {
+    "app_chrome": {
+      "family": "Outfit, sans-serif",
+      "weights": {
+        "regular": 400,
+        "medium": 500,
+        "bold": 700
+      },
+      "usage": "Headers, buttons, sidebars, settings sliders, utility text. Used for all UI elements outside the reading canvas."
+    },
+    "reading_surface": {
+      "serif": {
+        "family": "Spectral, serif",
+        "weights": {
+          "regular": 400,
+          "bold": 700
+        }
+      },
+      "sans": {
+        "family": "IBM Plex Sans, sans-serif",
+        "weights": {
+          "regular": 400,
+          "bold": 700
+        }
+      },
+      "mono": {
+        "family": "JetBrains Mono, monospace",
+        "weights": {
+          "regular": 400,
+          "bold": 700
+        }
+      },
+      "usage": "Used exclusively within the BionicReaderCanvas."
+    },
+    "scales": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tighter font-medium",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight font-medium",
+      "h3": "text-xl sm:text-2xl tracking-tight font-medium",
+      "ui_body": "text-sm sm:text-base",
+      "ui_label": "text-xs tracking-[0.1em] uppercase font-bold",
+      "reader_body": "text-lg md:text-xl lg:text-2xl leading-relaxed"
+    }
+  },
+  "layout": {
+    "spacing": "Generous spacing philosophy. Use p-8, p-12, p-16 for structural padding. Inside the reader canvas, maintain comfortable margins.",
+    "patterns": {
+      "landing": "Full height split or asymmetrical bento grid. Left side: Hero statement. Right side: Input zones (Text, PDF, Image, URL) arranged cleanly.",
+      "reader_view": "Two-column layout on desktop: Left/Right floating narrow sidebar (16rem width) for controls, center reading canvas max-w-[65ch] or custom width. Mobile: controls inside a collapsible bottom drawer.",
+      "surfaces": "No drop shadows. Use 1px solid borders for separation. Flat, crisp, print-like aesthetic."
+    }
+  },
+  "components": {
+    "buttons": {
+      "style": "Rectangular, sharp corners (rounded-none or rounded-sm max). 1px border. Monochrome by default. Hover states invert colors or use subtle tint.",
+      "primary": "bg-text_primary text-background hover:bg-accent hover:text-white transition-colors duration-200",
+      "secondary": "bg-transparent border border-border text-text_primary hover:bg-surface_secondary"
+    },
+    "inputs": {
+      "style": "Flat, sharp borders. focus:ring-1 focus:ring-text_primary. No rounded corners.",
+      "dropzone": "border-2 border-dashed border-border p-12 flex flex-col items-center justify-center hover:bg-surface_secondary hover:border-text_secondary transition-all cursor-pointer"
+    },
+    "bionic_reader_canvas": {
+      "style": "The holy grail. Max width constraint based on user setting (e.g., max-w-[65ch]). Left-aligned text. Generous line height (leading-loose).",
+      "bionic_logic": "Wrap the first N letters of each word in a <b> tag. The <b> tag should use the 'bionic_bold' color, and the remainder of the word should use 'bionic_dim' color for maximum contrast. Fixation strength controls how many letters are bolded."
+    },
+    "control_panel": {
+      "style": "Fixed sidebar or floating panel with 1px border. Contains sliders for fixation, selects for font, toggles for theme.",
+      "sliders": "Minimalist track (1px line), sharp square thumb."
+    }
+  },
+  "interactions": {
+    "hover": "Instant visual feedback, no bouncy animations. Crisp, engineered feel.",
+    "transitions": "opacity 150ms ease, color 150ms ease. Avoid transform animations unless necessary for layout shifts.",
+    "loading": "Use an ASCII-style or simple typographic loader (e.g., 'PROCESSING...' flashing) instead of a generic spinner to fit the high-tech editorial vibe."
+  },
+  "accessibility": {
+    "contrast": "Ensure the bionic bold vs dim colors maintain a readable contrast ratio against the background.",
+    "focus": "All interactive elements MUST have a visible focus ring (e.g., focus:ring-1 focus:ring-text_primary focus:outline-none).",
+    "test_ids": "All interactive and key informational elements MUST include a data-testid attribute in kebab-case."
+  },
+  "media": {
+    "image_urls": [
+      {
+        "url": "https://images.unsplash.com/photo-1601662528567-526cd06f6582?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODd8MHwxfHNlYXJjaHwyfHxtaW5pbWFsaXN0JTIwcGFwZXIlMjB0ZXh0dXJlfGVufDB8fHx8MTc4MzE1MjAxOXww&ixlib=rb-4.1.0&q=85",
+        "description": "Minimalist paper texture",
+        "category": "background_hint",
+        "instructions": "Use with very low opacity (e.g., opacity-20) in the light theme background to give a subtle organic reading-paper feel without cluttering the UI."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1543487945-139a97f387d5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzF8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjB0eXBvZ3JhcGh5JTIwcG9zdGVyfGVufDB8fHx8MTc4MzE1MjAxOXww&ixlib=rb-4.1.0&q=85",
+        "description": "Modern typography poster",
+        "category": "hero_empty_state",
+        "instructions": "Can be used as a subtle, heavily darkened or lightened graphic element in the empty state bento grid to reinforce the typographic/editorial theme."
+      }
+    ]
+  },
+  "dependencies": {
+    "icons": "lucide-react for sharp, minimalist icons.",
+    "fonts": "Import Outfit, Spectral, IBM Plex Sans, JetBrains Mono via Google Fonts.",
+    "ocr": "tesseract.js for client-side image-to-text processing."
+  },
+  "instructions_to_main_agent": [
+    "Ensure `data-testid` is added to all buttons, tabs, sliders, and dropzones.",
+    "Do NOT use Shadcn Card components with their default heavy rounded borders and drop shadows. If using Shadcn, override them to be sharp (rounded-none) with 1px border and zero shadow.",
+    "Implement a robust client-side Bionic Text converter function that processes text blocks accurately while preserving paragraphs.",
+    "For PDF extraction, use a library like pdfjs-dist. For URL extraction, implement a simple fetch or proxy to scrape the text, or mock it elegantly if the API is restricted.",
+    "Maintain strict separation between the 'UI Chrome' (menus, sidebars) and the 'Reader Canvas'. The Reader Canvas should feel sacred, blank, and focused."
+  ]
+}
