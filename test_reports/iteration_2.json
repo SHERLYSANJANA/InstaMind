@@ -1,0 +1,30 @@
+{
+  "summary": "Validated /api/share backend endpoints, /r/{id} shared reader UI flow, and OG/favicon assets. All backend + frontend share-flow tests pass. OG/meta tags in served index.html are STALE — served HTML still shows baseline template (theme-color #000000, description 'A product of emergent.sh') and does NOT include the new favicon.svg link, og:image, og:title (InstaRead — Bionic Reading) or twitter:card meta tags, even though /app/frontend/public/index.html on disk contains them. The /favicon.svg and /og-image.svg assets themselves are served correctly (200, image/svg+xml, non-empty).",
+  "tested_scope": ["backend", "frontend", "integration"],
+  "passed": [
+    "POST /api/share -> {id} hex length 10 (got '0aa6a2ec50')",
+    "GET /api/share/{id} returns full payload with matching text, title, source, created_at, word_count",
+    "GET /api/share/deadbeef00 -> 404",
+    "POST /api/share {text:''} -> 400",
+    "POST /api/share with 600KB payload -> 413",
+    "Main page: sample-btn + apply-btn load 69 words into reader",
+    "reader-share-btn opens share-dialog with QR SVG, share-url-text starting with site origin + /r/, and clickable share-copy-btn",
+    "Navigating to https://.../r/d74f049bf5 renders SharedReaderPage: shared-hero visible, reader-article has spans.bionic-b, reader-share-btn and reader-clear-btn absent (hideShare=true)",
+    "GET /favicon.svg -> 200 image/svg+xml (531 bytes, starts with <svg ...>)",
+    "GET /og-image.svg -> 200 image/svg+xml (2570 bytes, starts with <svg ...>)"
+  ],
+  "failed": [
+    {
+      "area": "OG/Meta tags in served index.html",
+      "issue": "Served root HTML is missing all new head tags: no <link rel=icon href=/favicon.svg>, no <meta property=og:image content=/og-image.svg>, no <meta property=og:title 'InstaRead — Bionic Reading'>, no <meta name=twitter:card content=summary_large_image>. Served HTML shows the old CRA baseline (theme-color #000000, description 'A product of emergent.sh'), meaning the CRA dev server has not picked up edits to public/index.html.",
+      "evidence": "curl -s https://neural-read-1.preview.emergentagent.com/ | grep -iE 'favicon|og:|twitter:' returns no matches; head shows old baseline meta tags. File on disk /app/frontend/public/index.html DOES contain the new tags.",
+      "priority": "HIGH"
+    }
+  ],
+  "action_items": [
+    "Restart the frontend supervisor process (sudo supervisorctl restart frontend) so CRA re-injects the updated public/index.html into the served bundle. After restart, re-verify curl of / contains favicon.svg link, og:image=/og-image.svg, og:title='InstaRead — Bionic Reading', twitter:card=summary_large_image."
+  ],
+  "success_rate": {"backend": "100%", "frontend": "90%"},
+  "retest_needed": true,
+  "full_testing_deferred": true
+}
