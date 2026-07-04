@@ -48,6 +48,21 @@ class URLExtractResponse(BaseModel):
     word_count: int
 
 
+class ShareCreate(BaseModel):
+    text: str
+    title: Optional[str] = None
+    source: Optional[str] = None
+
+
+class ShareDoc(BaseModel):
+    id: str
+    text: str
+    title: Optional[str] = None
+    source: Optional[str] = None
+    created_at: str
+    word_count: int
+
+
 @api_router.get("/")
 async def root():
     return {"message": "FocusRead API online"}
@@ -131,6 +146,35 @@ async def extract_url(payload: URLExtractRequest):
         source_url=url,
         word_count=word_count,
     )
+
+
+@api_router.post("/share")
+async def create_share(payload: ShareCreate):
+    text = (payload.text or "").strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="text is required")
+    if len(text) > 500_000:
+        raise HTTPException(status_code=413, detail="text is too large (max 500KB)")
+    share_id = uuid.uuid4().hex[:10]
+    doc = {
+        "id": share_id,
+        "text": text,
+        "title": (payload.title or "").strip() or None,
+        "source": (payload.source or "").strip() or None,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "word_count": len([w for w in text.split() if w]),
+    }
+    await db.shares.insert_one(doc)
+    return {"id": share_id}
+
+
+@api_router.get("/share/{share_id}", response_model=ShareDoc)
+async def get_share(share_id: str):
+    doc = await db.shares.find_one({"id": share_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="share not found")
+    return ShareDoc(**doc)
+
 
 
 app.include_router(api_router)
