@@ -38,7 +38,7 @@ export default function ReaderPage() {
                 <b className="bionic-b">text</b><span className="bionic-r">.</span>
               </h1>
               <p className="mt-6 text-base md:text-lg text-muted-foreground max-w-[54ch] leading-relaxed">
-                Paste words, drop a PDF, upload a photo, or point at a URL — FocusRead adds fixation anchors to
+                Paste words, drop a PDF, upload a photo, or point at a URL — InstaRead adds fixation anchors to
                 each word so your eye reads faster and your mind wanders less.
               </p>
             </>
@@ -57,7 +57,7 @@ export default function ReaderPage() {
         </div>
 
         <footer className={`mt-16 pt-6 flex items-center justify-between text-xs text-muted-foreground ${isNews ? "rule-thick" : "border-t border-border"}`}>
-          <span className="font-mono">FocusRead · minimal bionic reading engine</span>
+          <span className="font-mono">InstaRead · minimal bionic reading engine</span>
           <span className="label-caps opacity-60">v1 · 2026</span>
         </footer>
       </main>

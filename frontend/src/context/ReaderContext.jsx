@@ -38,7 +38,7 @@ const MAX_PERSISTED_TEXT = 250_000; // ~250 KB
 
 function loadState() {
   try {
-    const raw = localStorage.getItem("focusread:state");
+    const raw = localStorage.getItem("instaread:state");
     if (!raw) return DEFAULTS;
     const parsed = JSON.parse(raw);
     return { ...DEFAULTS, ...parsed };
@@ -58,7 +58,7 @@ export function ReaderProvider({ children }) {
         persistable.text = "";
         persistable.sourceLabel = "";
       }
-      localStorage.setItem("focusread:state", JSON.stringify(persistable));
+      localStorage.setItem("instaread:state", JSON.stringify(persistable));
     } catch { /* noop */ }
   }, [state]);
 

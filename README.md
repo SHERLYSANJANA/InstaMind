@@ -1,4 +1,4 @@
-# FocusRead
+# InstaRead
 
 **A high-tech, minimalistic bionic reader.** Turn any source — pasted text, PDFs, photos, or web URLs — into focused, fixation-anchored text designed to make your eyes read faster and your mind wander less.
 
@@ -31,7 +31,7 @@
 
 Bionic Reading bolds the **first few letters** of every word. Your eye lands on those "fixation anchors" and your brain auto-completes the rest through pattern recognition — often letting you read faster with less fatigue and better focus, especially helpful for readers with ADHD, dyslexia, or long-form fatigue.
 
-FocusRead pushes this idea further: **any source you throw at it becomes bionic text**, styled in a clean editorial or newspaper aesthetic, with fine-grained controls.
+InstaRead pushes this idea further: **any source you throw at it becomes bionic text**, styled in a clean editorial or newspaper aesthetic, with fine-grained controls.
 
 ---
 
@@ -57,7 +57,7 @@ FocusRead pushes this idea further: **any source you throw at it becomes bionic 
 
 ## Inputs — Take Anything, Give You Bionic
 
-FocusRead exposes four input surfaces via a tabbed panel:
+InstaRead exposes four input surfaces via a tabbed panel:
 
 | Tab | Source | How it works |
 |-----|--------|--------------|
@@ -77,7 +77,7 @@ Once your source is converted, the reader canvas takes over:
 - **Word tokens** — each word is split into a bolded head (`<b>` in near-black) and a dimmed tail. Punctuation, hyphens, apostrophes, and unicode letters (`\p{L}`) are all handled.
 - **Live word count & reading time** — shown in the reader header (240 wpm default).
 - **Copy** — grab the plain text for pasting elsewhere.
-- **Export** — download the extracted text as `focusread-export.txt`.
+- **Export** — download the extracted text as `instaread-export.txt`.
 - **Clear** — reset the reader.
 
 ---
@@ -112,7 +112,7 @@ All three themes are strictly **black & white** — no color accents, ever.
 |-------|------|
 | **Paper** ☀️ | Warm cream background, hard-black type. The default reading-paper look. |
 | **Ink** 🌙 | Deep charcoal background, warm off-white type. For night reading. |
-| **Newspaper** 📰 | Newsprint-cream page, **blackletter FocusRead masthead**, double-rule dividers, halftone dot bars, italic Old-Standard-TT hero, and a **2-column justified article** with column rule. |
+| **Newspaper** 📰 | Newsprint-cream page, **blackletter InstaRead masthead**, double-rule dividers, halftone dot bars, italic Old-Standard-TT hero, and a **2-column justified article** with column rule. |
 
 Switching themes updates the entire chrome — the app header even swaps to a full newspaper nameplate ("Vol. I · No. 1 · Bionic Reading Edition · Late Edition") when Newspaper is active.
 
@@ -159,11 +159,11 @@ Click **Print** in the reader header (works on any theme) and your browser opens
 
 - Newsprint-cream page (`#f2ede4`)
 - Top nameplate: `Vol. I · No. 1 | Bionic Reading Edition | <today's date>`
-- Blackletter **FocusRead** masthead
+- Blackletter **InstaRead** masthead
 - Second nameplate: `The Reader's Daily | N words · N min read | Late Edition`
 - Kicker + italic-serif article title + halftone dot rule
 - **2-column, justified bionic body** with a vertical column rule
-- Double-rule footer: `— Printed with FocusRead —`
+- Double-rule footer: `— Printed with InstaRead —`
 
 Everything renders via a pure CSS `@media print` block — no libraries, no server round-trip.
 
@@ -286,7 +286,7 @@ sudo supervisorctl restart backend frontend
 Base path: `/api`
 
 ### `GET /`
-Health check → `{ "message": "FocusRead API online" }`
+Health check → `{ "message": "InstaRead API online" }`
 
 ### `POST /extract-url`
 Fetch and clean an article body.
@@ -350,7 +350,7 @@ Ideas we might add next:
 - 🗑️ **Owner-delete for shares** (localStorage-scoped owner token → `DELETE /api/share/:id`)
 - 📚 **IndexedDB Library** — auto-save every processed document for later re-reading (great retention lever)
 - 🖼️ **Social OG preview cards** for `/r/:id` links so Slack / X / WhatsApp / iMessage unfurl into a broadsheet-styled image
-- 📸 **PNG snapshot export** — save the current bionic view as a shareable poster with a QR back to FocusRead
+- 📸 **PNG snapshot export** — save the current bionic view as a shareable poster with a QR back to InstaRead
 - 📈 **Reader stats** — total minutes saved, articles read, favorite fixation strength
 
 ---

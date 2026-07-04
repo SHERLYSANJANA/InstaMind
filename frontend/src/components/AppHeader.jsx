@@ -22,7 +22,7 @@ export default function AppHeader() {
           </div>
           <div className="flex items-baseline justify-between gap-4">
             <span className="masthead text-5xl md:text-6xl lg:text-7xl leading-none" data-testid="app-name">
-              FocusRead
+              InstaRead
             </span>
             <a
               href="#reader"
@@ -42,7 +42,7 @@ export default function AppHeader() {
         <div className="max-w-[1400px] mx-auto flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="h-7 w-7 border border-foreground flex items-center justify-center" aria-hidden>
-              <span className="text-[10px] font-bold tracking-[0.08em]" style={{ fontFamily: "var(--font-mono)" }}>FR</span>
+              <span className="text-[10px] font-bold tracking-[0.08em]" style={{ fontFamily: "var(--font-mono)" }}>IR</span>
             </div>
             <div className="flex items-baseline gap-3">
               <span
@@ -50,7 +50,7 @@ export default function AppHeader() {
                 style={{ fontFamily: "var(--font-ui)" }}
                 data-testid="app-name"
               >
-                <b className="bionic-b">Focu</b><span className="bionic-r">sRead</span>
+                <b className="bionic-b">Inst</b><span className="bionic-r">aRead</span>
               </span>
               <span className="hidden sm:inline label-caps opacity-60">Bionic Reader · v1</span>
             </div>

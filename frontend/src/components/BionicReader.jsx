@@ -97,7 +97,7 @@ export default function BionicReader({ hideShare = false }) {
   const handleDownload = () => {
     const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "focusread-export.txt"; a.click();
+    const a = document.createElement("a"); a.href = url; a.download = "instaread-export.txt"; a.click();
     URL.revokeObjectURL(url);
     toast.success("Exported as .txt");
   };

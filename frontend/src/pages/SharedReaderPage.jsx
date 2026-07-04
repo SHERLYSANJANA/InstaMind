@@ -45,7 +45,7 @@ export default function SharedReaderPage() {
           <p className="text-sm text-muted-foreground">
             Someone shared this bionic-formatted text with you.{" "}
             <Link to="/" className="underline underline-offset-4 hover:text-foreground" data-testid="shared-home-link">
-              Open FocusRead ↗
+              Open InstaRead ↗
             </Link>
           </p>
         </section>

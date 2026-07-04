@@ -31,7 +31,7 @@ export default function PrintBroadsheet() {
           <span>Bionic Reading Edition</span>
           <span>{date}</span>
         </div>
-        <h1 className="pb-masthead">FocusRead</h1>
+        <h1 className="pb-masthead">InstaRead</h1>
         <div className="pb-row pb-row-bottom">
           <span>The Reader's Daily</span>
           <span>{wc} words · {rt} min read</span>
@@ -52,7 +52,7 @@ export default function PrintBroadsheet() {
       </article>
 
       <footer className="pb-footer">
-        <span>— Printed with FocusRead —</span>
+        <span>— Printed with InstaRead —</span>
       </footer>
     </div>
   );

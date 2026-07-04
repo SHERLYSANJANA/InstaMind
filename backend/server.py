@@ -22,7 +22,7 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-app = FastAPI(title="FocusRead API")
+app = FastAPI(title="InstaRead API")
 api_router = APIRouter(prefix="/api")
 
 
@@ -65,7 +65,7 @@ class ShareDoc(BaseModel):
 
 @api_router.get("/")
 async def root():
-    return {"message": "FocusRead API online"}
+    return {"message": "InstaRead API online"}
 
 
 @api_router.post("/status", response_model=StatusCheck)
