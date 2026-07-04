@@ -1,8 +1,7 @@
 import { useReader } from "@/context/ReaderContext";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Moon, Sun, RotateCcw } from "lucide-react";
+import { Sun, Moon, Newspaper, RotateCcw } from "lucide-react";
 
 const FIXATION_OPTIONS = [
   { v: "light", l: "Light" },
@@ -16,6 +15,12 @@ const FONT_OPTIONS = [
   { v: "mono", l: "JetBrains · Mono" },
 ];
 
+const THEME_OPTIONS = [
+  { v: "light", l: "Paper", Icon: Sun },
+  { v: "dark", l: "Ink", Icon: Moon },
+  { v: "newspaper", l: "News", Icon: Newspaper },
+];
+
 function Row({ label, children, testId }) {
   return (
     <div className="py-4 border-b border-border last:border-b-0" data-testid={testId}>
@@ -27,14 +32,7 @@ function Row({ label, children, testId }) {
 
 export default function ControlPanel() {
   const {
-    fixation,
-    fontFamily,
-    fontSize,
-    lineHeight,
-    readingWidth,
-    theme,
-    set,
-    reset,
+    fixation, fontFamily, fontSize, lineHeight, readingWidth, theme, set, reset,
   } = useReader();
 
   return (
@@ -47,17 +45,29 @@ export default function ControlPanel() {
           <div className="label-caps">Controls</div>
           <div className="text-xs text-muted-foreground font-mono mt-1">reader settings</div>
         </div>
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => set({ theme: theme === "dark" ? "light" : "dark" })}
-          data-testid="control-theme-toggle"
-          aria-label="Toggle theme"
-          className="rounded-none h-9 w-9 border border-border"
-        >
-          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </Button>
       </div>
+
+      {/* Theme */}
+      <Row label="Theme" testId="control-theme">
+        <div className="grid grid-cols-3 gap-0 border border-border">
+          {THEME_OPTIONS.map(({ v, l, Icon }) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => set({ theme: v })}
+              data-testid={`control-theme-${v}`}
+              className={`text-[10px] uppercase tracking-[0.14em] font-semibold h-11 flex flex-col items-center justify-center gap-1 transition-colors border-r border-border last:border-r-0 ${
+                theme === v
+                  ? "bg-foreground text-background"
+                  : "bg-transparent text-foreground hover:bg-[hsl(var(--surface-secondary))]"
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {l}
+            </button>
+          ))}
+        </div>
+      </Row>
 
       {/* Fixation */}
       <Row label="Fixation" testId="control-fixation">
@@ -83,10 +93,7 @@ export default function ControlPanel() {
       {/* Font */}
       <Row label="Typeface" testId="control-font">
         <Select value={fontFamily} onValueChange={(v) => set({ fontFamily: v })}>
-          <SelectTrigger
-            data-testid="control-font-trigger"
-            className="rounded-none border-border h-10 font-mono text-xs"
-          >
+          <SelectTrigger data-testid="control-font-trigger" className="rounded-none border-border h-10 font-mono text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="rounded-none">
@@ -99,40 +106,16 @@ export default function ControlPanel() {
         </Select>
       </Row>
 
-      {/* Font size */}
       <Row label={`Size · ${fontSize}px`} testId="control-fontsize">
-        <Slider
-          value={[fontSize]}
-          min={14}
-          max={32}
-          step={1}
-          onValueChange={([v]) => set({ fontSize: v })}
-          data-testid="control-fontsize-slider"
-        />
+        <Slider value={[fontSize]} min={14} max={32} step={1} onValueChange={([v]) => set({ fontSize: v })} data-testid="control-fontsize-slider" />
       </Row>
 
-      {/* Line height */}
       <Row label={`Line height · ${lineHeight.toFixed(2)}`} testId="control-lineheight">
-        <Slider
-          value={[Math.round(lineHeight * 100)]}
-          min={130}
-          max={220}
-          step={5}
-          onValueChange={([v]) => set({ lineHeight: v / 100 })}
-          data-testid="control-lineheight-slider"
-        />
+        <Slider value={[Math.round(lineHeight * 100)]} min={130} max={220} step={5} onValueChange={([v]) => set({ lineHeight: v / 100 })} data-testid="control-lineheight-slider" />
       </Row>
 
-      {/* Reading width */}
       <Row label={`Width · ${readingWidth}ch`} testId="control-width">
-        <Slider
-          value={[readingWidth]}
-          min={40}
-          max={95}
-          step={1}
-          onValueChange={([v]) => set({ readingWidth: v })}
-          data-testid="control-width-slider"
-        />
+        <Slider value={[readingWidth]} min={40} max={95} step={1} onValueChange={([v]) => set({ readingWidth: v })} data-testid="control-width-slider" />
       </Row>
 
       <button
