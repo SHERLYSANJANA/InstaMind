@@ -3,9 +3,14 @@ import { useReader } from "@/context/ReaderContext";
 import { BionicText } from "@/components/BionicText";
 import { countWords, readingTimeMinutes } from "@/lib/bionic";
 import { Button } from "@/components/ui/button";
-import { Copy, Download, Trash2, Keyboard, Play, Pause, Square, Ruler, Share2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
+import { Copy, Download, Trash2, Keyboard, Play, Pause, Square, Ruler, Share2, Volume2 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
+import { QRCodeSVG } from "qrcode.react";
 import ReadingProgress from "@/components/ReadingProgress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -17,8 +22,20 @@ const FONT_STACK = {
   mono: "var(--font-mono)",
 };
 
+function useVoices() {
+  const [voices, setVoices] = useState([]);
+  useEffect(() => {
+    if (!("speechSynthesis" in window)) return;
+    const load = () => setVoices(window.speechSynthesis.getVoices() || []);
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+    return () => { window.speechSynthesis.onvoiceschanged = null; };
+  }, []);
+  return voices;
+}
+
 export default function BionicReader({ hideShare = false }) {
-  const { text, sourceLabel, fixation, fontFamily, fontSize, lineHeight, readingWidth, theme, clearText } = useReader();
+  const { text, sourceLabel, fixation, fontFamily, fontSize, lineHeight, readingWidth, theme, ttsVoice, set, clearText } = useReader();
   const isNews = theme === "newspaper";
   const articleRef = useRef(null);
   const containerRef = useRef(null);
@@ -26,26 +43,29 @@ export default function BionicReader({ hideShare = false }) {
   const [rulerOn, setRulerOn] = useState(false);
   const [rulerY, setRulerY] = useState(null);
 
-  // TTS state
-  const [ttsState, setTtsState] = useState("idle"); // idle | speaking | paused
+  const [ttsState, setTtsState] = useState("idle");
+  const [activeStart, setActiveStart] = useState(null);
   const utterRef = useRef(null);
+
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
+  const [shareBusy, setShareBusy] = useState(false);
+
+  const voices = useVoices();
 
   const stats = useMemo(
     () => ({ words: countWords(text), minutes: readingTimeMinutes(text) }),
     [text]
   );
-
   const effectiveFontStack = isNews ? "var(--font-news)" : FONT_STACK[fontFamily];
 
-  // Ruler mouse tracking
   useEffect(() => {
     if (!rulerOn || !containerRef.current) return;
     const el = containerRef.current;
     const onMove = (e) => {
       const rect = el.getBoundingClientRect();
       const y = e.clientY - rect.top;
-      if (y >= 0 && y <= rect.height) setRulerY(y);
-      else setRulerY(null);
+      setRulerY(y >= 0 && y <= rect.height ? y : null);
     };
     const onLeave = () => setRulerY(null);
     el.addEventListener("mousemove", onMove);
@@ -56,58 +76,70 @@ export default function BionicReader({ hideShare = false }) {
     };
   }, [rulerOn]);
 
-  // Stop TTS on unmount or text change
-  useEffect(() => {
-    return () => { try { window.speechSynthesis?.cancel(); } catch { /* noop */ } };
-  }, []);
+  useEffect(() => () => { try { window.speechSynthesis?.cancel(); } catch { /* noop */ } }, []);
   useEffect(() => {
     try { window.speechSynthesis?.cancel(); } catch { /* noop */ }
     setTtsState("idle");
+    setActiveStart(null);
   }, [text]);
 
   const handleCopy = async () => {
     try { await navigator.clipboard.writeText(text); toast.success("Text copied to clipboard"); }
     catch { toast.error("Copy failed"); }
   };
-
   const handleDownload = () => {
     const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = "focusread-export.txt"; a.click();
+    const a = document.createElement("a"); a.href = url; a.download = "focusread-export.txt"; a.click();
     URL.revokeObjectURL(url);
     toast.success("Exported as .txt");
   };
 
   const handleShare = async () => {
+    if (shareBusy) return;
+    setShareBusy(true);
     try {
       const res = await axios.post(`${API}/share`, {
-        text,
-        title: sourceLabel || null,
-        source: sourceLabel || null,
+        text, title: sourceLabel || null, source: sourceLabel || null,
       });
       const link = `${window.location.origin}/r/${res.data.id}`;
-      await navigator.clipboard.writeText(link);
-      toast.success("Share link copied");
+      setShareUrl(link);
+      setShareOpen(true);
+      try { await navigator.clipboard.writeText(link); toast.success("Share link copied"); } catch { /* noop */ }
     } catch (e) {
       toast.error(e?.response?.data?.detail || "Could not create share link");
+    } finally {
+      setShareBusy(false);
     }
   };
 
   const handlePlay = () => {
-    if (!window.speechSynthesis) { toast.error("Speech not supported in this browser"); return; }
+    if (!("speechSynthesis" in window)) { toast.error("Speech not supported in this browser"); return; }
     if (ttsState === "paused") { window.speechSynthesis.resume(); setTtsState("speaking"); return; }
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.rate = 1.0;
-    u.onend = () => setTtsState("idle");
-    u.onerror = () => setTtsState("idle");
+    const chosen = voices.find((v) => v.voiceURI === ttsVoice);
+    if (chosen) { u.voice = chosen; u.lang = chosen.lang; }
+    u.onboundary = (e) => {
+      if (e.name === "word" || typeof e.charIndex === "number") {
+        setActiveStart(e.charIndex);
+      }
+    };
+    u.onend = () => { setTtsState("idle"); setActiveStart(null); };
+    u.onerror = () => { setTtsState("idle"); setActiveStart(null); };
     utterRef.current = u;
     window.speechSynthesis.speak(u);
     setTtsState("speaking");
   };
   const handlePause = () => { window.speechSynthesis?.pause(); setTtsState("paused"); };
-  const handleStop = () => { window.speechSynthesis?.cancel(); setTtsState("idle"); };
+  const handleStop = () => { window.speechSynthesis?.cancel(); setTtsState("idle"); setActiveStart(null); };
+
+  // Voice list — prefer localService then remote
+  const groupedVoices = useMemo(() => {
+    const list = voices.slice().sort((a, b) => a.lang.localeCompare(b.lang) || a.name.localeCompare(b.name));
+    return list;
+  }, [voices]);
 
   return (
     <section
@@ -145,19 +177,40 @@ export default function BionicReader({ hideShare = false }) {
               </button>
             )}
             <button type="button" onClick={handleStop} disabled={ttsState === "idle"} data-testid="reader-tts-stop"
-              className="h-8 px-2 text-xs flex items-center gap-1.5 hover:bg-[hsl(var(--surface-secondary))] disabled:opacity-40">
+              className="h-8 px-2 text-xs flex items-center gap-1.5 hover:bg-[hsl(var(--surface-secondary))] disabled:opacity-40 border-r border-border">
               <Square className="h-3 w-3" />
             </button>
+            <div className="h-8 flex items-center pl-2 pr-1 gap-1.5">
+              <Volume2 className="h-3 w-3 opacity-60" />
+              <Select value={ttsVoice || "__default__"} onValueChange={(v) => set({ ttsVoice: v === "__default__" ? "" : v })}>
+                <SelectTrigger data-testid="reader-tts-voice-trigger" className="rounded-none border-0 h-6 w-[130px] font-mono text-[11px] px-1 focus:ring-0 shadow-none">
+                  <SelectValue placeholder="Default voice" />
+                </SelectTrigger>
+                <SelectContent className="rounded-none max-h-72 w-[260px]">
+                  <SelectItem value="__default__" className="rounded-none font-mono text-xs">
+                    System default
+                  </SelectItem>
+                  {groupedVoices.map((v) => (
+                    <SelectItem
+                      key={v.voiceURI}
+                      value={v.voiceURI}
+                      data-testid={`reader-tts-voice-${v.voiceURI}`}
+                      className="rounded-none font-mono text-xs"
+                    >
+                      <span className="opacity-60">{v.lang}</span> · {v.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          {/* Ruler */}
           <button type="button" onClick={() => setRulerOn((v) => !v)} data-testid="reader-ruler-toggle"
             aria-pressed={rulerOn}
             className={`h-8 px-2 text-xs border border-border flex items-center gap-1.5 transition-colors ${rulerOn ? "bg-foreground text-background" : "hover:bg-[hsl(var(--surface-secondary))]"}`}>
             <Ruler className="h-3 w-3" />Ruler
           </button>
 
-          {/* Shortcuts */}
           <TooltipProvider delayDuration={150}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -176,7 +229,7 @@ export default function BionicReader({ hideShare = false }) {
           </TooltipProvider>
 
           {!hideShare && (
-            <Button variant="ghost" size="sm" onClick={handleShare} disabled={!text} data-testid="reader-share-btn" className="rounded-none h-8">
+            <Button variant="ghost" size="sm" onClick={handleShare} disabled={!text || shareBusy} data-testid="reader-share-btn" className="rounded-none h-8">
               <Share2 className="h-3.5 w-3.5 mr-1.5" /> Share
             </Button>
           )}
@@ -196,17 +249,12 @@ export default function BionicReader({ hideShare = false }) {
 
       <div ref={containerRef} className={`relative ${isNews ? "" : "paper-grain"}`}>
         {rulerOn && rulerY !== null && (
-          <div
-            data-testid="focus-ruler"
-            className="pointer-events-none absolute left-0 right-0 z-10"
-            style={{ top: `${rulerY}px` }}
-            aria-hidden
-          >
+          <div data-testid="focus-ruler" className="pointer-events-none absolute left-0 right-0 z-10" style={{ top: `${rulerY}px` }} aria-hidden>
             <div className="h-6 -mt-3 bg-[hsl(var(--foreground)/0.08)] border-y border-foreground/40" />
           </div>
         )}
         {text ? (
-          <div className={`mx-auto px-6 md:px-10 lg:px-14 py-10 md:py-14`} style={{ maxWidth: `${readingWidth}ch` }}>
+          <div className="mx-auto px-6 md:px-10 lg:px-14 py-10 md:py-14" style={{ maxWidth: `${readingWidth}ch` }}>
             {isNews && sourceLabel && (
               <div className="mb-6 text-center">
                 <div className="label-caps mb-2">Front Page · Bionic Edit</div>
@@ -228,14 +276,56 @@ export default function BionicReader({ hideShare = false }) {
               }}
               className={`text-foreground ${isNews ? "text-justify md:columns-2 [&_p]:break-inside-avoid" : ""}`}
             >
-              <BionicText text={text} fixation={fixation} />
+              <BionicText text={text} fixation={fixation} activeStart={activeStart} />
             </article>
           </div>
         ) : (
           <EmptyState isNews={isNews} />
         )}
       </div>
+
+      <ShareDialog open={shareOpen} onOpenChange={setShareOpen} url={shareUrl} />
     </section>
+  );
+}
+
+function ShareDialog({ open, onOpenChange, url }) {
+  const [copied, setCopied] = useState(false);
+  const doCopy = async () => {
+    try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1500); }
+    catch { /* noop */ }
+  };
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent data-testid="share-dialog" className="rounded-none border-border max-w-md">
+        <DialogHeader>
+          <DialogTitle className="label-caps text-sm" style={{ letterSpacing: "0.14em" }}>
+            Share this read
+          </DialogTitle>
+          <DialogDescription className="text-xs text-muted-foreground">
+            Anyone with the link can read this bionic article. Scan the QR to open it on your phone.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid grid-cols-[auto_1fr] gap-5 items-center pt-2">
+          <div className="border border-foreground p-2 bg-white" data-testid="share-qr">
+            {url ? <QRCodeSVG value={url} size={128} level="M" fgColor="#000000" bgColor="#ffffff" /> : null}
+          </div>
+          <div className="flex flex-col gap-3">
+            <div className="text-[11px] font-mono break-all border border-border p-2" data-testid="share-url-text">
+              {url}
+            </div>
+            <button
+              type="button"
+              onClick={doCopy}
+              data-testid="share-copy-btn"
+              className="h-8 px-3 text-xs uppercase tracking-[0.14em] font-semibold bg-foreground text-background hover:opacity-80 transition-opacity"
+            >
+              {copied ? "Copied" : "Copy link"}
+            </button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

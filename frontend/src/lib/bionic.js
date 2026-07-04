@@ -1,19 +1,7 @@
-// Bionic text conversion utilities.
-// Strategy: for each word, bold the first N letters where N is derived from
-// word length and a user-defined fixation strength (light | normal | strong).
+// Bionic text conversion utilities with source char offsets for TTS sync.
 
-const RATIOS = {
-  light: 0.35,
-  normal: 0.5,
-  strong: 0.65,
-};
-
-// Minimum letters to bold for short words per strength
-const MIN_BOLD = {
-  light: 1,
-  normal: 1,
-  strong: 2,
-};
+const RATIOS = { light: 0.35, normal: 0.5, strong: 0.65 };
+const MIN_BOLD = { light: 1, normal: 1, strong: 2 };
 
 export const FIXATION_LEVELS = ["light", "normal", "strong"];
 
@@ -26,38 +14,48 @@ function computeBoldLen(wordLen, strength) {
   return Math.min(wordLen - 1, Math.max(min, n));
 }
 
-// Split a word into leading punctuation, letters, trailing punctuation.
 const WORD_RE = /^([^\p{L}\p{N}]*)([\p{L}\p{N}'’-]*)([^\p{L}\p{N}]*)$/u;
 
 /**
- * Convert a plain text string into an array of paragraph tokens, where each
- * paragraph is an array of tokens { type: 'word' | 'space', bold?, rest? }.
- * We return structured data so React can render safely (no dangerouslySetInnerHTML).
+ * Tokenise text into paragraphs of tokens. Each word token carries the
+ * character range { start, end } (relative to the whole input string) so
+ * TTS boundary events can highlight the active word.
  */
 export function bionicize(text, strength = "normal") {
   if (!text) return [];
-  const paragraphs = text.replace(/\r\n/g, "\n").split(/\n\s*\n+/); // blank line = paragraph break
-  return paragraphs.map((para) => {
-    // Preserve single newlines as soft breaks within a paragraph
-    const lines = para.split(/\n/);
+  const normalised = text.replace(/\r\n/g, "\n");
+  const paragraphSplitRe = /\n\s*\n+/g;
+
+  const paragraphs = [];
+  let cursor = 0;
+  const parts = normalised.split(paragraphSplitRe);
+
+  for (let pi = 0; pi < parts.length; pi++) {
+    const para = parts[pi];
     const tokens = [];
-    lines.forEach((line, li) => {
-      const parts = line.split(/(\s+)/); // keep whitespace tokens
-      parts.forEach((chunk) => {
-        if (!chunk) return;
+    const lines = para.split(/\n/);
+    for (let li = 0; li < lines.length; li++) {
+      const line = lines[li];
+      // Split on whitespace groups while keeping them
+      const chunks = line.split(/(\s+)/);
+      for (const chunk of chunks) {
+        if (!chunk) continue;
+        const start = cursor;
+        cursor += chunk.length;
+        const end = cursor;
         if (/^\s+$/.test(chunk)) {
-          tokens.push({ type: "space", value: chunk });
-          return;
+          tokens.push({ type: "space", value: chunk, start, end });
+          continue;
         }
         const m = chunk.match(WORD_RE);
         if (!m) {
-          tokens.push({ type: "word", pre: "", bold: chunk, rest: "", post: "" });
-          return;
+          tokens.push({ type: "word", pre: "", bold: chunk, rest: "", post: "", start, end });
+          continue;
         }
         const [, pre, core, post] = m;
         if (!core) {
-          tokens.push({ type: "word", pre, bold: "", rest: "", post });
-          return;
+          tokens.push({ type: "word", pre, bold: "", rest: "", post, start, end });
+          continue;
         }
         const n = computeBoldLen(core.length, strength);
         tokens.push({
@@ -66,14 +64,24 @@ export function bionicize(text, strength = "normal") {
           bold: core.slice(0, n),
           rest: core.slice(n),
           post,
+          start,
+          end,
         });
-      });
-      if (li < lines.length - 1) {
-        tokens.push({ type: "break" });
       }
-    });
-    return tokens;
-  });
+      if (li < lines.length - 1) {
+        tokens.push({ type: "break", start: cursor, end: cursor + 1 });
+        cursor += 1; // for the \n
+      }
+    }
+    paragraphs.push(tokens);
+    if (pi < parts.length - 1) {
+      // account for the paragraph separator we split away (approx 2 chars)
+      // find the actual length of the separator between this and next part
+      const sepMatch = normalised.slice(cursor).match(/^\n\s*\n+/);
+      cursor += sepMatch ? sepMatch[0].length : 2;
+    }
+  }
+  return paragraphs;
 }
 
 export function countWords(text) {

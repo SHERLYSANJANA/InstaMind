@@ -31,6 +31,7 @@ const DEFAULTS = {
   readingWidth: 68,
   theme: "light",
   ocrLang: "eng",
+  ttsVoice: "",
 };
 
 const MAX_PERSISTED_TEXT = 250_000; // ~250 KB
